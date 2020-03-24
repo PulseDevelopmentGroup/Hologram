@@ -2,7 +2,7 @@ import fastify from "fastify";
 import { AddressInfo } from "net";
 
 const server = fastify({
-  logger: true
+  logger: true,
 });
 
 server.get("/", async (request, reply) => {
