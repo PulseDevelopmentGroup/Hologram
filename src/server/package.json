@@ -19,9 +19,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/socket.io": "^2.1.4",
     "concurrently": "^5.1.0",
     "fastify": "^2.13.0",
     "nodemon": "^2.0.2",
+    "socket.io": "^2.3.0",
     "typescript": "^3.8.3"
   },
   "devDependencies": {

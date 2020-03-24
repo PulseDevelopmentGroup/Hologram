@@ -1,6 +1,7 @@
 import * as React from "react";
 import { FC } from "react";
 import { RouteComponentProps } from "react-router";
+import { useSocket } from "./useSocket";
 
 interface RouteProps {
   screenNumber?: string;
@@ -8,8 +9,10 @@ interface RouteProps {
 
 interface ScreenProps extends RouteComponentProps<RouteProps> {}
 
-export const Screen: FC<ScreenProps> = (props) => {
-  console.log(props);
+export const Screen: FC<ScreenProps> = ({ match, ...props }) => {
+  const { screenNumber } = match.params;
 
-  return <div>I'm a screen</div>;
+  const socket = useSocket();
+
+  return <div>Hello, I'm screen number {screenNumber}</div>;
 };
