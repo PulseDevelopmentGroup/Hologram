@@ -3,32 +3,68 @@ import http from "http";
 import socketIo from "socket.io";
 import { AddressInfo } from "net";
 
-const server = fastify({
-  logger: true,
-});
+export default class Server {
+  address: string;
+  httpPort: number;
+  socketPort: number;
 
-const socketServer = http.createServer(server.server as any);
+  private httpServer: fastify.FastifyInstance;
+  private socketServer: http.Server;
+  private io: socketIo.Server;
 
-const io = socketIo(socketServer);
+  constructor(address: string, httpPort: number, socketPort: number) {
+    this.address = address; // TODO: Setup server to bind to address
+    this.httpPort = httpPort;
+    this.socketPort = socketPort;
 
-io.on("connection", (socket) => {
-  console.log("user connected");
-});
+    this.httpServer = fastify({
+      logger: true,
+    });
+    this.socketServer = http.createServer(this.httpServer.server as any);
+    this.io = socketIo(this.socketServer);
 
-server.get("/", async (request, reply) => {
-  return { hello: "world" };
-});
+    this.io.on("connection", (socket) => {
+      console.log("user connected");
+    });
 
-const start = async () => {
-  try {
-    socketServer.listen(4001);
-    await server.listen(4000);
-    server.log.info(
-      `Server listening on ${(server.server.address() as AddressInfo)?.port}`
-    );
-  } catch (err) {
-    server.log.error(err);
-    process.exit(1);
+    this.httpServer.get("/", async (request, reply) => {
+      return { hello: "world" };
+    });
   }
-};
-start();
+
+  start = async () => {
+    try {
+      this.socketServer.listen(this.socketPort);
+      await this.httpServer.listen(this.httpPort);
+      this.httpServer.log.info(
+        `Server listening on ${
+          (this.httpServer.server.address() as AddressInfo)?.port
+        }`
+      );
+    } catch (err) {
+      this.httpServer.log.error(err);
+      process.exit(1);
+    }
+  };
+
+  stop() {
+    this.httpServer.log.info(
+      `Server going down due to user-triggered stop command.`
+    );
+
+    this.socketServer.close();
+    this.httpServer.close();
+  }
+
+  restart() {
+    this.httpServer.log.info(
+      `Server restarting due to user-triggered restart command.`
+    );
+
+    this.stop();
+    this.start();
+  }
+}
+
+const s = new Server("0.0.0.0", 4001, 4000);
+s.start();
