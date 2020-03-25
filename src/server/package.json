@@ -2,7 +2,7 @@
   "name": "ust-server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/server.js",
   "scripts": {
     "build-ts": "tsc",
     "debug": "npm run build && npm run watch-debug",
