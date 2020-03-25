@@ -12,13 +12,13 @@ export default class Server {
   private socketServer: http.Server;
   private io: socketIo.Server;
 
-  constructor(address: string, httpPort: number, socketPort: number) {
-    this.address = address; // TODO: Setup server to bind to address
+  constructor(address: string, httpPort: number, socketPort: number, log: any) {
+    this.address = address;
     this.httpPort = httpPort;
     this.socketPort = socketPort;
 
     this.httpServer = fastify({
-      logger: true,
+      logger: log,
     });
     this.socketServer = http.createServer(this.httpServer.server as any);
     this.io = socketIo(this.socketServer);
@@ -34,8 +34,8 @@ export default class Server {
 
   start = async () => {
     try {
-      this.socketServer.listen(this.socketPort);
-      await this.httpServer.listen(this.httpPort);
+      this.socketServer.listen(this.socketPort, this.address);
+      await this.httpServer.listen(this.httpPort, this.address);
       this.httpServer.log.info(
         `Server listening on ${
           (this.httpServer.server.address() as AddressInfo)?.port
@@ -47,6 +47,7 @@ export default class Server {
     }
   };
 
+  // TODO: Get stop and restart working
   stop() {
     this.httpServer.log.info(
       `Server going down due to user-triggered stop command.`
@@ -65,6 +66,3 @@ export default class Server {
     this.start();
   }
 }
-
-const s = new Server("0.0.0.0", 4001, 4000);
-s.start();
