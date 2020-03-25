@@ -13,6 +13,14 @@ const io = socketIo(socketServer);
 
 io.on("connection", (socket) => {
   console.log("user connected");
+  socket.on("boop", (data) => {
+    console.log(data);
+  });
+
+  socket.on("join", (roomId: string) => {
+    console.log(`Socket ${socket.id} joined room ${roomId}`);
+    socket.join(roomId);
+  });
 });
 
 server.get("/", async (request, reply) => {

@@ -12,7 +12,7 @@ interface ScreenProps extends RouteComponentProps<RouteProps> {}
 export const Screen: FC<ScreenProps> = ({ match, ...props }) => {
   const { screenNumber } = match.params;
 
-  const socket = useSocket();
+  const socket = useSocket(screenNumber);
 
   return <div>Hello, I'm screen number {screenNumber}</div>;
 };
