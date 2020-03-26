@@ -3,40 +3,75 @@ import http from "http";
 import socketIo from "socket.io";
 import { AddressInfo } from "net";
 
-const server = fastify({
-  logger: true,
-});
+export default class Server {
+  address: string;
+  httpPort: number;
+  socketPort: number;
 
-const socketServer = http.createServer(server.server as any);
+  private httpServer: fastify.FastifyInstance;
+  private socketServer: http.Server;
+  private io: socketIo.Server;
 
-const io = socketIo(socketServer);
+  constructor(address: string, httpPort: number, socketPort: number, log: any) {
+    this.address = address;
+    this.httpPort = httpPort;
+    this.socketPort = socketPort;
 
-io.on("connection", (socket) => {
-  console.log("user connected");
-  socket.on("boop", (data) => {
-    console.log(data);
-  });
+    this.httpServer = fastify({
+      logger: log,
+    });
+    this.socketServer = http.createServer(this.httpServer.server as any);
+    this.io = socketIo(this.socketServer);
 
-  socket.on("join", (roomId: string) => {
-    console.log(`Socket ${socket.id} joined room ${roomId}`);
-    socket.join(roomId);
-  });
-});
+    this.io.on("connection", (socket) => {
+      console.log("user connected");
+      socket.on("boop", (data) => {
+        console.log(data);
+      });
 
-server.get("/", async (request, reply) => {
-  return { hello: "world" };
-});
+      socket.on("join", (roomId: string) => {
+        console.log(`Socket ${socket.id} joined room ${roomId}`);
+        socket.join(roomId);
+      });
+    });
 
-const start = async () => {
-  try {
-    socketServer.listen(4001);
-    await server.listen(4000);
-    server.log.info(
-      `Server listening on ${(server.server.address() as AddressInfo)?.port}`
-    );
-  } catch (err) {
-    server.log.error(err);
-    process.exit(1);
+    this.httpServer.get("/", async (request, reply) => {
+      return { hello: "world" };
+    });
   }
-};
-start();
+
+  start = async () => {
+    try {
+      this.socketServer.listen(this.socketPort, this.address);
+      await this.httpServer.listen(this.httpPort, this.address);
+      this.httpServer.log.info(
+        `Server listening on ${
+          (this.httpServer.server.address() as AddressInfo)?.port
+        }`
+      );
+    } catch (err) {
+      this.httpServer.log.error(err);
+      process.exit(1);
+    }
+  };
+
+  // TODO: Get stop and restart working
+  stop() {
+    this.httpServer.log.info(
+      `Server going down due to user-triggered stop command.`
+    );
+
+    this.socketServer.close();
+    this.httpServer.close();
+  }
+
+  restart() {
+    this.httpServer.log.info(
+      `Server restarting due to user-triggered restart command.`
+    );
+
+    this.stop();
+    this.start();
+  }
+}
+
