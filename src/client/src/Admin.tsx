@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { RouteComponentProps } from "react-router";
 import { FC } from "react";
 import { useSocket } from "./useSocket";
@@ -6,16 +6,22 @@ import { useSocket } from "./useSocket";
 interface AdminProps extends RouteComponentProps {}
 
 export const Admin: FC<AdminProps> = (props) => {
+  const [rooms, setRooms] = useState<string[]>([]);
   const socket = useSocket();
   console.log(socket);
 
-  const handlePing = () => {
-    socket.emit("boop", "hello");
+  const getServers = () => {
+    socket.emit("get rooms", setRooms);
   };
 
   return (
     <div>
-      <button onClick={handlePing}>Ping</button>
+      <button onClick={getServers}>Get Rooms</button>
+      <ul>
+        {rooms.map((room) => (
+          <li key={room}>{room}</li>
+        ))}
+      </ul>
     </div>
   );
 };

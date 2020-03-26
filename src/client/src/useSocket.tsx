@@ -7,7 +7,7 @@ socket.on("connect", (data: any) => {
 });
 
 socket.on("disconnect", () => {
-  console.log("Disconnected ");
+  console.log("Disconnected");
 });
 
 const joinedRooms: string[] = [];

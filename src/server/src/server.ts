@@ -28,6 +28,14 @@ export default class Server {
       socket.on("boop", (data) => {
         console.log(data);
       });
+      socket.on("get rooms", (cb) => {
+        const rooms = Object.keys(this.io.sockets.adapter.rooms);
+        const filteredRooms = rooms.filter((room) =>
+          room.startsWith("screen/")
+        );
+
+        cb(filteredRooms);
+      });
 
       socket.on("join", (roomId: string) => {
         console.log(`Socket ${socket.id} joined room ${roomId}`);
