@@ -1,5 +1,5 @@
 {
-  "name": "Hologram-Client",
+  "name": "hologram-client",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
