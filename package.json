@@ -1,5 +1,5 @@
 {
-  "name": "ust",
+  "name": "hologram",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/PulseDevelopmentGroup/UST.git"
+    "url": "git+https://github.com/PulseDevelopmentGroup/Hologram.git"
   },
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/PulseDevelopmentGroup/UST/issues"
+    "url": "https://github.com/PulseDevelopmentGroup/Hologram/issues"
   },
-  "homepage": "https://github.com/PulseDevelopmentGroup/UST#readme",
+  "homepage": "https://github.com/PulseDevelopmentGroup/Hologram#readme",
   "devDependencies": {
     "prettier": "^2.0.2"
   }
