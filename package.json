@@ -1,5 +1,5 @@
 {
-  "name": "hologram",
+  "name": "@pulsedev/hologram",
   "version": "1.0.0",
   "description": "",
   "main": "dist/server.js",
