@@ -1,4 +1,6 @@
+import path from "path";
 import fastify from "fastify";
+import fastifyStatic from "fastify-static";
 import http from "http";
 import socketIo from "socket.io";
 import { AddressInfo } from "net";
@@ -43,8 +45,13 @@ export default class Server {
       });
     });
 
-    this.httpServer.get("/", async (request, reply) => {
-      return { hello: "world" };
+    this.httpServer.register(fastifyStatic, {
+      root: path.join(__dirname, "public"),
+      wildcard: false,
+    });
+
+    this.httpServer.setNotFoundHandler((req, res) => {
+      res.sendFile("index.html");
     });
   }
 
