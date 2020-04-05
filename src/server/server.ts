@@ -2,10 +2,10 @@ import path from "path";
 import fastify from "fastify";
 import fastifyStatic from "fastify-static";
 import { AddressInfo } from "net";
-import { ApolloServer, gql } from "apollo-server-fastify";
+import { ApolloServer, gql, IResolvers } from "apollo-server-fastify";
 
 const typeDefs = gql`
-  type Room {
+  type Screen {
     name: String
     # might need this if we want custom paths?
     # slug: String
@@ -14,11 +14,15 @@ const typeDefs = gql`
   }
 
   type Query {
-    rooms: [Room]
+    screens: [Screen]
+  }
+
+  type Mutation {
+    addScreen(name: String, content: String): Screen
   }
 `;
 
-const rooms = [
+const screens = [
   {
     name: "Room 1",
     content: "This is room 1",
@@ -31,9 +35,24 @@ const rooms = [
   },
 ];
 
-const resolvers = {
+const resolvers: IResolvers = {
   Query: {
-    rooms: () => rooms,
+    screens: () => screens,
+  },
+  Mutation: {
+    addScreen: (parent, { name, content }) => {
+      console.log(parent, name, content);
+
+      const newScreen = {
+        name,
+        content,
+        open: false,
+      };
+
+      screens.push(newScreen);
+
+      return newScreen;
+    },
   },
 };
 
