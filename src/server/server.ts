@@ -1,49 +1,58 @@
 import path from "path";
 import fastify from "fastify";
 import fastifyStatic from "fastify-static";
-import http from "http";
-import socketIo from "socket.io";
 import { AddressInfo } from "net";
+import { ApolloServer, gql } from "apollo-server-fastify";
+
+const typeDefs = gql`
+  type Room {
+    name: String
+    # might need this if we want custom paths?
+    # slug: String
+    content: String
+    open: Boolean
+  }
+
+  type Query {
+    rooms: [Room]
+  }
+`;
+
+const rooms = [
+  {
+    name: "Room 1",
+    content: "This is room 1",
+    open: false,
+  },
+  {
+    name: "Bottom Half",
+    content: "Blah blah yak yak",
+    open: false,
+  },
+];
+
+const resolvers = {
+  Query: {
+    rooms: () => rooms,
+  },
+};
 
 export default class Server {
   address: string;
   httpPort: number;
-  socketPort: number;
 
   private httpServer: fastify.FastifyInstance;
-  private socketServer: http.Server;
-  private io: socketIo.Server;
 
-  constructor(address: string, httpPort: number, socketPort: number, log: any) {
+  constructor(address: string, httpPort: number, log: any) {
     this.address = address;
     this.httpPort = httpPort;
-    this.socketPort = socketPort;
 
     this.httpServer = fastify({
       logger: log,
     });
-    this.socketServer = http.createServer(this.httpServer.server as any);
-    this.io = socketIo(this.socketServer);
 
-    this.io.on("connection", (socket) => {
-      console.log("user connected");
-      socket.on("boop", (data) => {
-        console.log(data);
-      });
-      socket.on("get rooms", (cb) => {
-        const rooms = Object.keys(this.io.sockets.adapter.rooms);
-        const filteredRooms = rooms.filter((room) =>
-          room.startsWith("screen/")
-        );
-
-        cb(filteredRooms);
-      });
-
-      socket.on("join", (roomId: string) => {
-        console.log(`Socket ${socket.id} joined room ${roomId}`);
-        socket.join(roomId);
-      });
-    });
+    const server = new ApolloServer({ typeDefs, resolvers });
+    this.httpServer.register(server.createHandler());
 
     this.httpServer.register(fastifyStatic, {
       root: path.join(__dirname, "public"),
@@ -57,7 +66,6 @@ export default class Server {
 
   start = async () => {
     try {
-      this.socketServer.listen(this.socketPort, this.address);
       await this.httpServer.listen(this.httpPort, this.address);
       this.httpServer.log.info(
         `Server listening on ${
@@ -76,7 +84,6 @@ export default class Server {
       `Server going down due to user-triggered stop command.`
     );
 
-    this.socketServer.close();
     this.httpServer.close();
   }
 
