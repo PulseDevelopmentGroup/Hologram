@@ -1,6 +1,7 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { RouteComponentProps } from "react-router";
 import { FC } from "react";
+import { Screen } from "./types";
 import { gql, useQuery, useMutation } from "@apollo/client";
 
 interface AdminProps extends RouteComponentProps {}
@@ -25,16 +26,42 @@ const ADD_SCREEN = gql`
   }
 `;
 
+const SCREEN_SUBSCRIPTION = gql`
+  subscription onScreenAdded {
+    screenAdded {
+      name
+      content
+      open
+    }
+  }
+`;
+
 export const Admin: FC<AdminProps> = (props) => {
-  const { loading, error, data, refetch } = useQuery<{
-    screens: {
-      name: string;
-      content: string;
-      open: boolean;
-    }[];
+  const { loading, error, data, refetch, subscribeToMore } = useQuery<{
+    screens: Screen[];
   }>(SCREENS);
 
-  const [addScreen, _] = useMutation(ADD_SCREEN);
+  useEffect(() => {
+    if (subscribeToMore) {
+      subscribeToMore<{
+        screenAdded: Screen;
+      }>({
+        document: SCREEN_SUBSCRIPTION,
+        updateQuery: (prev, { subscriptionData }) => {
+          console.log(prev, subscriptionData);
+          if (!subscriptionData.data) {
+            return prev;
+          }
+
+          return {
+            screens: [...prev.screens, subscriptionData.data.screenAdded],
+          };
+        },
+      });
+    }
+  }, [subscribeToMore]);
+
+  const [addScreen] = useMutation(ADD_SCREEN);
 
   const nameInput = useRef<HTMLInputElement | null>(null);
 
@@ -58,8 +85,13 @@ export const Admin: FC<AdminProps> = (props) => {
       >
         <input type="text" ref={nameInput} />
         <button type="submit">Create Screen</button>
+        {error && (
+          <div className="text-red-500">
+            Error creating screen. Please try again.
+          </div>
+        )}
       </form>
-      {loading && <h3>Loading...</h3>}
+      {<h3>{loading ? "Loading..." : "Screens"}</h3>}
       <ul>
         {data?.screens.map((screen) => (
           <li key={screen.name}>{screen.name}</li>

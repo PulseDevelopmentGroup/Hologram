@@ -2,7 +2,10 @@ import path from "path";
 import fastify from "fastify";
 import fastifyStatic from "fastify-static";
 import { AddressInfo } from "net";
-import { ApolloServer, gql, IResolvers } from "apollo-server-fastify";
+import { ApolloServer, gql, IResolvers, PubSub } from "apollo-server-fastify";
+
+const pubsub = new PubSub();
+const SCREEN_ADDED = "SCREEN_ADDED";
 
 const typeDefs = gql`
   type Screen {
@@ -19,6 +22,10 @@ const typeDefs = gql`
 
   type Mutation {
     addScreen(name: String, content: String): Screen
+  }
+
+  type Subscription {
+    screenAdded: Screen
   }
 `;
 
@@ -49,9 +56,16 @@ const resolvers: IResolvers = {
         open: false,
       };
 
+      pubsub.publish(SCREEN_ADDED, { screenAdded: newScreen });
+
       screens.push(newScreen);
 
       return newScreen;
+    },
+  },
+  Subscription: {
+    screenAdded: {
+      subscribe: () => pubsub.asyncIterator([SCREEN_ADDED]),
     },
   },
 };
@@ -71,7 +85,10 @@ export default class Server {
     });
 
     const server = new ApolloServer({ typeDefs, resolvers });
-    this.httpServer.register(server.createHandler());
+    this.httpServer.register(server.createHandler(), {
+      subscription: true,
+    });
+    server.installSubscriptionHandlers(this.httpServer.server);
 
     this.httpServer.register(fastifyStatic, {
       root: path.join(__dirname, "public"),
