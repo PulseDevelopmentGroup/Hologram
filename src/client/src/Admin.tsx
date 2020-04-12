@@ -36,6 +36,15 @@ const SCREEN_SUBSCRIPTION = gql`
   }
 `;
 
+const TOGGLE_SCREEN = gql`
+  mutation ToggleScreen($name: String!, $open: Boolean!) {
+    toggleScreen(name: $name, open: $open) {
+      name
+      open
+    }
+  }
+`;
+
 export const Admin: FC<AdminProps> = (props) => {
   const { loading, error, data, refetch, subscribeToMore } = useQuery<{
     screens: Screen[];
@@ -44,7 +53,8 @@ export const Admin: FC<AdminProps> = (props) => {
   useEffect(() => {
     if (subscribeToMore) {
       subscribeToMore<{
-        screenAdded: Screen;
+        screenAdded?: Screen;
+        screenToggled?: Screen;
       }>({
         document: SCREEN_SUBSCRIPTION,
         updateQuery: (prev, { subscriptionData }) => {
@@ -53,15 +63,20 @@ export const Admin: FC<AdminProps> = (props) => {
             return prev;
           }
 
-          return {
-            screens: [...prev.screens, subscriptionData.data.screenAdded],
-          };
+          if (subscriptionData.data.screenAdded) {
+            return {
+              screens: [...prev.screens, subscriptionData.data.screenAdded],
+            };
+          }
+
+          return prev;
         },
       });
     }
   }, [subscribeToMore]);
 
   const [addScreen] = useMutation(ADD_SCREEN);
+  const [toggleScreen] = useMutation(TOGGLE_SCREEN);
 
   const nameInput = useRef<HTMLInputElement | null>(null);
 
@@ -94,7 +109,22 @@ export const Admin: FC<AdminProps> = (props) => {
       {<h3>{loading ? "Loading..." : "Screens"}</h3>}
       <ul>
         {data?.screens.map((screen) => (
-          <li key={screen.name}>{screen.name}</li>
+          <li key={screen.name}>
+            {screen.name}
+            <button
+              className="border"
+              onClick={() => {
+                toggleScreen({
+                  variables: {
+                    name: screen.name,
+                    open: !screen.open,
+                  },
+                });
+              }}
+            >
+              Toggle
+            </button>
+          </li>
         ))}
       </ul>
     </div>

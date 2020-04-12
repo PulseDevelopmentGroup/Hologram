@@ -6,6 +6,7 @@ import { ApolloServer, gql, IResolvers, PubSub } from "apollo-server-fastify";
 
 const pubsub = new PubSub();
 const SCREEN_ADDED = "SCREEN_ADDED";
+const SCREEN_TOGGLED = "SCREEN_TOGGLED";
 
 const typeDefs = gql`
   type Screen {
@@ -18,14 +19,17 @@ const typeDefs = gql`
 
   type Query {
     screens: [Screen]
+    screen(name: String!): Screen
   }
 
   type Mutation {
     addScreen(name: String, content: String): Screen
+    toggleScreen(name: String!, open: Boolean!): Screen
   }
 
   type Subscription {
     screenAdded: Screen
+    screenToggled(name: String!): Screen
   }
 `;
 
@@ -45,6 +49,11 @@ const screens = [
 const resolvers: IResolvers = {
   Query: {
     screens: () => screens,
+    screen: (parent, { name }) => {
+      return screens.find(
+        (screen) => screen.name.toLowerCase() === name.toLowerCase()
+      );
+    },
   },
   Mutation: {
     addScreen: (parent, { name, content }) => {
@@ -62,10 +71,24 @@ const resolvers: IResolvers = {
 
       return newScreen;
     },
+    toggleScreen: (parent, { name, open }) => {
+      const screen = screens.find((screen) => screen.name === name);
+
+      if (screen) {
+        screen.open = open;
+
+        pubsub.publish(SCREEN_TOGGLED, { screenToggled: screen });
+
+        return screen;
+      }
+    },
   },
   Subscription: {
     screenAdded: {
       subscribe: () => pubsub.asyncIterator([SCREEN_ADDED]),
+    },
+    screenToggled: {
+      subscribe: () => pubsub.asyncIterator([SCREEN_TOGGLED]),
     },
   },
 };
