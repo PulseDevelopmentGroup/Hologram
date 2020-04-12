@@ -37,21 +37,23 @@ export const Screen: FC<ScreenProps> = ({ match, ...props }) => {
       name: screenNumber,
     },
   });
+  const screen = data?.screen;
 
   useEffect(() => {
-    if (subscribeToMore) {
-      subscribeToMore({
+    if (subscribeToMore && screenNumber) {
+      return subscribeToMore({
         document: SUBSCRIBE_TO_SCREEN,
         variables: {
           name: screenNumber,
         },
         updateQuery: (prev, { subscriptionData }) => {
-          console.log(prev, subscriptionData);
-          return subscriptionData.data.screenToggled;
+          return {
+            screen: subscriptionData.data.screenToggled,
+          };
         },
       });
     }
-  }, [subscribeToMore]);
+  }, [subscribeToMore, screenNumber]);
 
   return (
     <div>
@@ -60,7 +62,8 @@ export const Screen: FC<ScreenProps> = ({ match, ...props }) => {
       ) : (
         <div>
           Hello, I'm screen number {screenNumber}.<h3>This is my data:</h3>
-          <p>{JSON.stringify(data)}</p>
+          open?:{screen?.open.toString()}
+          <p>{JSON.stringify(screen)}</p>
         </div>
       )}
     </div>
