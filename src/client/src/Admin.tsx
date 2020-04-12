@@ -76,7 +76,39 @@ export const Admin: FC<AdminProps> = (props) => {
   }, [subscribeToMore]);
 
   const [addScreen] = useMutation(ADD_SCREEN);
-  const [toggleScreen] = useMutation(TOGGLE_SCREEN);
+  const [toggleScreen] = useMutation(TOGGLE_SCREEN, {
+    update(cache, { data: { toggleScreen } }) {
+      const screens = cache.readQuery<{
+        screens: Screen[];
+      }>({ query: SCREENS });
+
+      const oldScreen = screens?.screens.find(
+        (screen) => screen.name === toggleScreen.name
+      );
+      const newScreen = {
+        ...oldScreen,
+        ...toggleScreen,
+      };
+
+      let newScreens = [...(screens?.screens ?? [])];
+
+      if (oldScreen) {
+        const oldIndex = screens?.screens.indexOf(oldScreen);
+        if (oldIndex) {
+          newScreens.splice(oldIndex, 1, newScreen);
+        }
+      } else {
+        newScreens.push(newScreen);
+      }
+
+      cache.writeQuery({
+        query: SCREENS,
+        data: {
+          screens: newScreens,
+        },
+      });
+    },
+  });
 
   const nameInput = useRef<HTMLInputElement | null>(null);
 
@@ -110,7 +142,7 @@ export const Admin: FC<AdminProps> = (props) => {
       <ul>
         {data?.screens.map((screen) => (
           <li key={screen.name}>
-            {screen.name}
+            {screen.name} ({screen.open ? "open" : "closed"})
             <button
               className="border"
               onClick={() => {
