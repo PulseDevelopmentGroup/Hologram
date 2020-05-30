@@ -51,7 +51,9 @@ const resolvers: IResolvers = {
     screens: () => screens,
     screen: (parent, { name }) => {
       return screens.find(
-        (screen) => screen.name.toLowerCase() === name.toLowerCase()
+        (screen) =>
+          screen.name.replace(/\s/g, "").toLowerCase() ===
+          name.replace(/\s/g, "").toLowerCase()
       );
     },
   },
