@@ -94,7 +94,7 @@ export const Admin: FC<AdminProps> = (props) => {
 
       if (oldScreen) {
         const oldIndex = screens?.screens.indexOf(oldScreen);
-        if (oldIndex) {
+        if (oldIndex !== undefined) {
           newScreens.splice(oldIndex, 1, newScreen);
         }
       } else {

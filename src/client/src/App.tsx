@@ -5,7 +5,7 @@ import {
   Redirect,
   Switch,
 } from "react-router-dom";
-import { Screen } from "./Screen";
+import { Holo } from "./Holo";
 import { Admin } from "./Admin";
 import {
   ApolloProvider,
@@ -52,7 +52,7 @@ function App() {
       <ApolloProvider client={client}>
         <Switch>
           <Route path="/play" component={Admin} />
-          <Route path="/screen/:screenNumber?" component={Screen} />
+          <Route path="/screen/:screenNumber?" component={Holo} />
           <Redirect to="/play" />
         </Switch>
       </ApolloProvider>
