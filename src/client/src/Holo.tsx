@@ -61,15 +61,13 @@ export const Holo: FC<HoloProps> = ({ match, ...props }) => {
       {loading ? (
         <h3>Loading</h3>
       ) : (
-        // <div>
-        //   Hello, I'm screen number {screenNumber}.<h3>This is my data:</h3>
-        //   open?:{screen?.open.toString()}
-        //   <p>{JSON.stringify(screen)}</p>
-        // </div>
         screen?.open && (
-          <div className="fixed top-0 right-0 bottom-0 left-0 bg-red-200">
-            <h1>{screen.name}</h1>
-            {screen.content}
+          <div className="fixed top-0 right-0 bottom-0 left-0">
+            <div
+              dangerouslySetInnerHTML={{
+                __html: screen.content,
+              }}
+            ></div>
           </div>
         )
       )}

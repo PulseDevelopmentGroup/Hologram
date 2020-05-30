@@ -111,27 +111,43 @@ export const Admin: FC<AdminProps> = (props) => {
   });
 
   const nameInput = useRef<HTMLInputElement | null>(null);
+  const contentInput = useRef<HTMLTextAreaElement | null>(null);
 
   return (
-    <div>
-      <button onClick={() => refetch()}>Get Rooms</button>
+    <div className="p-4">
+      <button className="rounded border p-2" onClick={() => refetch()}>
+        Get Rooms
+      </button>
       <form
         onSubmit={(e) => {
           e.preventDefault();
           addScreen({
             variables: {
               name: nameInput.current?.value ?? "Untitled Screen",
-              content: "",
+              content: contentInput.current?.value ?? "Some Content",
             },
           });
 
-          if (nameInput.current) {
+          if (nameInput.current && contentInput.current) {
             nameInput.current.value = "";
+            contentInput.current.value = "";
           }
         }}
       >
-        <input type="text" ref={nameInput} />
-        <button type="submit">Create Screen</button>
+        <div className="space-y-2 mt-2">
+          <input
+            className="block border"
+            type="text"
+            placeholder="Holo Name"
+            ref={nameInput}
+          />
+          <textarea
+            className="block border"
+            placeholder="Holo Content"
+            ref={contentInput}
+          ></textarea>
+          <button type="submit">Create Screen</button>
+        </div>
         {error && (
           <div className="text-red-500">
             Error creating screen. Please try again.
